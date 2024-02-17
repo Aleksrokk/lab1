@@ -1,24 +1,43 @@
-const String command = "AT+";
-const int pause = 200; 
-byte count = 0;
-int lampState = HIGH; 
-
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);  
-  Serial.begin(9600);  
+const int ledPin = 13; 
+String inputString = ""; 
+boolean stringComplete = false; 
+int number = 0;
+void setup() 
+{
+  Serial.begin(9600); 
+  pinMode(ledPin, OUTPUT);
 }
-
-void loop() {
-  for (int i = 0; i < 10; ++i) {
-    
-    Serial.print(command);
-    Serial.print(count++);
-    Serial.print("\r\n");
-    delay(pause);
+void loop() 
+{
+  if (stringComplete) 
+  { 
+    if (inputString.startsWith("AT+")) 
+    { 
+      inputString.remove(0, 3); 
+      number = inputString.toInt(); 
+      if (number % 10 == 0) 
+      { 
+        digitalWrite(ledPin, HIGH); 
+        Serial.println("ON"); 
+      } else 
+      {
+        digitalWrite(ledPin, LOW); 
+        Serial.println("OFF"); 
+      }
+    }
+    inputString = ""; 
+    stringComplete = false;
   }
-
-  digitalWrite(LED_BUILTIN, lampState); 
-  delay(pause);
-
-  lampState = (lampState == HIGH) ? LOW : HIGH;
+}
+void serialEvent() 
+{
+  while (Serial.available()) 
+  {
+    char inChar = (char)Serial.read(); 
+    inputString += inChar; 
+    if (inChar == '\n') 
+    { 
+      stringComplete = true;
+    }
+  }
 }
